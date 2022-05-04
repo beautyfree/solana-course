@@ -4,6 +4,7 @@ use solana_program::{msg, program_error::ProgramError};
 pub enum Instruction {
     FunctionA,
     FunctionB,
+    FunctionC,
 }
 
 // implement unpacking of the above enum
@@ -27,6 +28,7 @@ impl Instruction {
         match function_flag {
             0 => Ok(Self::FunctionA),
             1 => Ok(Self::FunctionB),
+            2 => Ok(Self::FunctionC),
 
             _ => {
                 return Err(ProgramError::BorshIoError(

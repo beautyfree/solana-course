@@ -8,6 +8,7 @@ import {
   TransactionInstruction,
   sendAndConfirmTransaction,
   Transaction,
+  AccountMeta,
 } from "@solana/web3.js";
 import path from "path";
 
@@ -77,19 +78,54 @@ export async function callFuncs(
 ): Promise<void> {
   // Get func to call
   const user_input = await getUserInput(
-    "Which function do you want to call? (A = FunctionA, ∀ = FunctionB)"
+    "Which function do you want to call? (A = FunctionA, B = FunctionB, C = FunctionC)"
   );
 
+  let keys: Array<AccountMeta> = [];
   let dest_func;
   if (user_input.toUpperCase() === "A") {
     dest_func = 0;
-  } else {
+    keys = [
+      {
+        pubkey: await checkBinaryExists(
+          path.join(PROGRAM_PATH, "helloworld-keypair.json")
+        ),
+        isSigner: false,
+        isWritable: false,
+      },
+    ];
+  } else if (user_input.toUpperCase() === "B") {
     dest_func = 1;
+
+    let programIDCounter = await checkBinaryExists(
+      path.join(PROGRAM_PATH, "counter-keypair.json")
+    );
+
+    const GREETING_SEED = "hello_this_can_be_anything";
+    let greetedPubkey = await PublicKey.createWithSeed(
+      payer.publicKey,
+      GREETING_SEED,
+      programIDCounter
+    );
+    keys = [
+      {
+        pubkey: programIDCounter,
+        isSigner: false,
+        isWritable: false,
+      },
+      {
+        pubkey: greetedPubkey,
+        isSigner: false,
+        isWritable: true,
+      },
+    ];
+  } else {
+    dest_func = 2;
   }
 
   // assembly of instruction
   const instruction = new TransactionInstruction({
-    keys: [],
+    keys,
     programId,
     data: Buffer.from([dest_func]),
   });

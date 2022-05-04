@@ -74,14 +74,23 @@ export async function invoke(
   payer: Keypair
 ): Promise<void> {
   // load key of the hello world
-  let programIDHelloWorld = await checkBinaryExists(
-    path.join(PROGRAM_PATH, "helloworld-keypair.json")
+  let programIDCounter = await checkBinaryExists(
+    path.join(PROGRAM_PATH, "counter-keypair.json")
   );
-
-  console.log("programIDHelloWorld: ", programIDHelloWorld.toBase58());
+  console.log("programIDCounter: ", programIDCounter.toBase58());
+  const GREETING_SEED = "hello_this_can_be_anything";
+  let greetedPubkey = await PublicKey.createWithSeed(
+    payer.publicKey,
+    GREETING_SEED,
+    programIDCounter
+  );
+  console.log(111, greetedPubkey.toString());
 
   const instruction = new TransactionInstruction({
-    keys: [{ pubkey: programIDHelloWorld, isSigner: false, isWritable: false }],
+    keys: [
+      { pubkey: programIDCounter, isSigner: false, isWritable: false },
+      { pubkey: greetedPubkey, isSigner: false, isWritable: true },
+    ],
     programId,
     data: Buffer.alloc(0), // Instruction data unnecessary to simply log output
   });

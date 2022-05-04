@@ -2,7 +2,7 @@ use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint,
     entrypoint::ProgramResult,
-    instruction::Instruction,
+    instruction::{AccountMeta, Instruction},
     msg,
     program::invoke,
     pubkey::Pubkey,
@@ -21,15 +21,17 @@ pub fn process_instruction(
 
     // Get passed program ID of the helloworld
     let account_info_iter = &mut accounts.iter();
-    let helloworld_account = next_account_info(account_info_iter)?;
+    let counter_program = next_account_info(account_info_iter)?;
+    let counter_account = next_account_info(account_info_iter)?;
 
+    let account_metas = vec![AccountMeta::new(*counter_account.key, false)];
     // assemble new instructions
-    let inst = Instruction::new_with_bincode(*helloworld_account.key, &[0; 0], vec![]);
+    let inst = Instruction::new_with_bincode(*counter_program.key, &[0; 0], account_metas);
 
-    msg!("[entrypoint] Calling helloworld");
+    msg!("[entrypoint] Calling counter");
 
     // invoke helloworld
-    invoke(&inst, &[helloworld_account.clone()])?;
+    invoke(&inst, &[counter_program.clone(), counter_account.clone()])?;
 
     Ok(())
 }
